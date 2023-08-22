@@ -7,13 +7,12 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { clipBase_Layer, clipBlink, clipHello } from './config';
+import { clipBase_Layer, clipBlink, clipHello, clipRes } from './config';
 
 export const Anika = () => {
     useEffect(() => {
         const sceneDom = document.getElementById('scene');
         const rect = sceneDom?.getBoundingClientRect()!;
-        console.log(rect);
 
         const clock = new THREE.Clock();
 
@@ -116,14 +115,21 @@ export const Anika = () => {
                 Anika010_1.morphTargetInfluences = P;
                 Anika010_5.morphTargetInfluences = P;
                 Anika010_4.morphTargetInfluences = P;
+
+                setTimeout(() => {
+                    const action = Anika010Mixer.clipAction(clipRes);
+                    action.setLoop(THREE.LoopOnce, 10);
+                    action.fadeIn(0.1).play();
+                    setTimeout( ()=>action.fadeOut(.25),  1 )
+                }, 5000);
             });
 
-            renderer.setAnimationLoop(() => {
-                const p = clock.getDelta();
-                Anika010Mixer && Anika010Mixer.update(p);
-                rigMixer && rigMixer.update(p);
-                renderer.render( scene, camera );
-            })
+        renderer.setAnimationLoop(() => {
+            const p = clock.getDelta();
+            Anika010Mixer && Anika010Mixer.update(p);
+            rigMixer && rigMixer.update(p);
+            renderer.render( scene, camera );
+        })
     
     }, [])
 
