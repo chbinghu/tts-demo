@@ -6,8 +6,13 @@ import { Color, Mesh, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { clipBase_Layer, clipBlink, clipHello, clipRes } from './config';
+import { reqeustTTS } from './service';
+
+let Anika010Mixer: THREE.AnimationMixer;
+let rigMixer: THREE.AnimationMixer;
+let rigAction: THREE.AnimationAction;
+let blinkAction: THREE.AnimationAction;
 
 export const Anika = () => {
     useEffect(() => {
@@ -38,10 +43,6 @@ export const Anika = () => {
         scene.environment = pmremGenerator.fromScene( environment ).texture;
 
         scene.add( new THREE.AxesHelper( 20 ) );
-        let Anika010Mixer: THREE.AnimationMixer;
-        let rigMixer: THREE.AnimationMixer;
-        let rigAction: THREE.AnimationAction;
-        let blinkAction: THREE.AnimationAction;
 
         const loadingManager = new THREE.LoadingManager();
         loadingManager.onLoad = function() {
@@ -116,12 +117,11 @@ export const Anika = () => {
                 Anika010_5.morphTargetInfluences = P;
                 Anika010_4.morphTargetInfluences = P;
 
-                setTimeout(() => {
-                    const action = Anika010Mixer.clipAction(clipRes);
-                    action.setLoop(THREE.LoopOnce, 10);
-                    action.fadeIn(0.1).play();
-                    setTimeout( ()=>action.fadeOut(.25),  1 )
-                }, 5000);
+                // setTimeout(() => {
+                //     const action = Anika010Mixer.clipAction(clipRes);
+                //     action.setLoop(THREE.LoopRepeat, 10);
+                //     action.fadeIn(0.1).play();
+                // }, 8000);
             });
 
         renderer.setAnimationLoop(() => {
@@ -133,5 +133,22 @@ export const Anika = () => {
     
     }, [])
 
-    return <div id="scene" className='w-full h-full min-h-full shrink relative transition-transform duration-500'></div>
+    function handleClick() {
+        reqeustTTS()
+        .then(data => {
+            console.log(data);
+            const t = data.audio.audioDuration / 1e4;
+
+            if(data.clip) {
+                const action = Anika010Mixer.clipAction(data.clip);
+                action.setLoop(THREE.LoopOnce, 1);
+                action.fadeIn(0.1).play();
+                setTimeout(()=>action.fadeOut(.25), t - 1e3);
+            }
+        })
+    }
+
+    return <div id="scene" className='w-full h-full min-h-full shrink relative transition-transform duration-500'>
+        <div className='w-20 h-8 bg-emerald-200 absolute cursor-pointer' onClick={handleClick}> speak </div>
+    </div>
 }
