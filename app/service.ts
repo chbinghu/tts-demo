@@ -7,7 +7,7 @@ speechConfig.speechSynthesisLanguage = "en-US";
 speechConfig.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio24Khz160KBitRateMonoMp3;
 const synthesizer = new sdk.SpeechSynthesizer(speechConfig);
 
-const Nf: { [key: number]: number } = {
+const lipIndex: { [key: number]: number } = {
     14: 14,
     15: 15,
     16: 16,
@@ -41,62 +41,53 @@ const Nf: { [key: number]: number } = {
     51: 51
 };
 
-// 将嘴唇部分的动画数据提取出来
-const Of = (r: number[], e: any) => {
-    for (const [t, n] of Object.entries(Nf)) {
-        e[t] || (e[t] = []);
-        e[t].push(r[n]);
+/**
+ * 
+ * @param blendShape 
+ * @param frameValueMap
+ *  blendShape 中的数据格式是：时间序列 -> 所有的面部表情数据
+ *  需要转换为 指定位置 -> 按时间排序的数据
+ */
+const parseLipData = (blendShape: number[], frameValueMap: { [key: number]: number[] } ) => {
+    for (const [key, value] of Object.entries(lipIndex)) {
+        if( frameValueMap[value] === undefined) {
+            frameValueMap[value] = [];
+        }
+        frameValueMap[value].push(blendShape[value]);
     }
 }
 
-const Bf = (r: any, times: number[])=>{
-    const t = [];
-    for (const [n, i] of Object.entries(r)) {
-        const s = new NumberKeyframeTrack(`.morphTargetInfluences[${n}]`, times, i as number[]);
-        t.push(s)
+const createKeyFrames = (frameValueMap: { [key: number]: number[] }, times: number[])=>{
+    const frames: NumberKeyframeTrack[]  = [];
+    for (const [index, values] of Object.entries(frameValueMap)) {
+        const s = new NumberKeyframeTrack(`.morphTargetInfluences[${index}]`, times, values);
+        frames.push(s)
     }
-    return t
+    return frames
 }
 
-export async function reqeustTTS() {
-    return new Promise<{audio: any, clip: AnimationClip | undefined}>((resolve, reject) => {
+export async function reqeustTTS(sentence: string) {
+    return new Promise<{audio: sdk.SpeechSynthesisResult, blendShapes: number[][]}>((resolve, reject) => {
         const blendShapes: number[][] = [];
     
         const xml = `
         <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xml:lang="en-US">
           <voice name="en-US-JennyNeural">
             <mstts:viseme type="FacialExpression"/>
-            Rainbow has seven colors: Red, orange, yellow, green, blue, indigo, and violet.
+            ${sentence}
           </voice>
         </speak>
         `;
         
-        function callback(c: SpeechSynthesisResult) {
+        function callback(result: SpeechSynthesisResult) {
             try {
-                if(c.reason === ResultReason.SynthesizingAudioCompleted) {
-                    const times = [];
-                    const step = .016666666666666666;
-                    const h: { [key: number]: number[] } = {};
-
-                    for(let i=0; i < blendShapes.length; i++) {
-                        times.push(step * i);
-                        Of(blendShapes[i], h)
-                    }
-                    if(times.length === 0) {
-                        resolve({
-                            audio: c,
-                            clip: undefined,
-                        })
-                    }
-                    const duration = times.length * step;
-                    const p = Bf(h, times)
-                    const g = new AnimationClip("faceGrpAnim", duration, p);
+                if(result.reason === ResultReason.SynthesizingAudioCompleted) {
                     resolve({
-                        audio: c,
-                        clip: g,
-                    })
+                        audio: result,
+                        blendShapes: blendShapes,
+                    });
                 } else {
-                    reject('"Speech synthesis failed!"')
+                    reject("Speech synthesis failed!")
                 }
             } catch (e) {
                 reject("Speech synthesis failed!");

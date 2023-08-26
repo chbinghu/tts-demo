@@ -63,7 +63,7 @@ export const Anika = () => {
         }
 
         new GLTFLoader(loadingManager).setMeshoptDecoder( MeshoptDecoder )
-            .load('/anika.glb', (gltf) => {
+            .load('/tts-demo/anika.glb', (gltf) => {
                 console.log(gltf);
 
                 scene.add(gltf.scene);
@@ -134,17 +134,17 @@ export const Anika = () => {
     }, [])
 
     function handleClick() {
-        reqeustTTS()
+        reqeustTTS('hello')
         .then(data => {
             console.log(data);
             const t = data.audio.audioDuration / 1e4;
 
-            if(data.clip) {
-                const action = Anika010Mixer.clipAction(data.clip);
-                action.setLoop(THREE.LoopOnce, 1);
-                action.fadeIn(0.1).play();
-                setTimeout(()=>action.fadeOut(.25), t - 1e3);
-            }
+            // if(data.clip) {
+            //     const action = Anika010Mixer.clipAction(data.clip);
+            //     action.setLoop(THREE.LoopOnce, 1);
+            //     action.fadeIn(0.1).play();
+            //     setTimeout(()=>action.fadeOut(.25), t - 1e3);
+            // }
         })
     }
 
