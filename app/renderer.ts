@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimationMixer, AxesHelper, Box3, Box3Helper, BoxGeometry, BoxHelper, Clock, Color, Mesh, MeshBasicMaterial, PMREMGenerator, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, AnimationMixer, AxesHelper, Box3, Box3Helper, BoxGeometry, BoxHelper, Clock, Color, DirectionalLight, HemisphereLight, Mesh, MeshBasicMaterial, PMREMGenerator, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -38,6 +38,13 @@ export class Renderer {
         this.camera.position.z = 5;
         this.camera.lookAt(0,0,0);
 
+        // const light = new AmbientLight( 0x303030 ); // soft white light
+        // this.scene.add( light );
+
+        // const directionalLight = new DirectionalLight( 0xf6f6f6, 1 );
+        // directionalLight.position.set(3, 10, -3.25);
+        // this.scene.add( directionalLight );
+
         this.animate();
     }
 
@@ -45,7 +52,7 @@ export class Renderer {
         const environment = new RoomEnvironment( this.renderer );
         const pmremGenerator = new PMREMGenerator( this.renderer );
 
-        this.scene.background = new Color( 0x666666 );
+        this.scene.background = new Color( 0xf6f6f6 );
         this.scene.environment = pmremGenerator.fromScene( environment ).texture;
     }
 

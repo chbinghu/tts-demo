@@ -73,7 +73,7 @@ export class Anika {
     load = async () => {
         return Loader.getInstance().load('/anika.glb')
             .then(gltf => {        
-                const Anika010 = gltf.scene.getObjectByName('Fem-A_Whl_BY_Anika010') as Mesh;    
+                const Anika010 = gltf.scene.getObjectByName('Fem-A_Whl_BY_Anika010') as Mesh;                
                 this.mixer = new AnimationMixer(Anika010);
     
                 return gltf;
